@@ -1,6 +1,6 @@
 """
-Logistics Delivery Risk Intelligence - Bonus Challenge (Selected 2 Key Tasks)
-------------------------------------------------------------------------------
+Logistics Delivery Risk Intelligence - Advanced Operational Strategy Tasks
+---------------------------------------------------------------------------
 1. Hierarchical Agglomerative Clustering (Ward Linkage) & Dendrogram
 2. Three-Tier Operational Intervention Priority Framework
 """
