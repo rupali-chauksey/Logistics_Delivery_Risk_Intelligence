@@ -9,13 +9,11 @@
 [![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=flat-square&logo=jupyter&logoColor=white)](https://jupyter.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://opensource.org/licenses/MIT)
 
-- **Author / Candidate**: Rupali Chouksey
-- **Assignment Project**: Logistics Delivery Risk Intelligence (End-to-End Machine Learning Pipeline)
+- **Project**: Logistics Delivery Risk Intelligence (End-to-End Machine Learning Pipeline)
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
 - **GitHub Repository**: [https://github.com/rupali-chauksey/logistics_delivery_risk_intelligence](https://github.com/rupali-chauksey/logistics_delivery_risk_intelligence)
 - **Primary Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
 - **Dataset**: [`logistics_delivery_delay.csv`](./logistics_delivery_delay.csv)
-- **Core Technologies**: Python 3, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
 
 ---
 
