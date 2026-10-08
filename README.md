@@ -8,7 +8,6 @@
 [![SciPy](https://img.shields.io/badge/SciPy-Clustering-8CAAE6?style=flat-square&logo=scipy&logoColor=white)](https://scipy.org/)
 [![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=flat-square&logo=jupyter&logoColor=white)](https://jupyter.org/)
 [![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://opensource.org/licenses/MIT)
-[![Pipeline Status](https://img.shields.io/badge/Pipeline-100%25%20Verified-brightgreen?style=flat-square)]()
 
 - **Author / Candidate**: Rupali Chouksey
 - **Assignment Project**: Logistics Delivery Risk Intelligence (End-to-End Machine Learning Pipeline)
