@@ -72,14 +72,14 @@ y_pred_reg = reg.predict(X_eval_proc)
 rf_probs = rf.predict_proba(X_eval_proc)[:, 1]
 
 print("==================================================")
-print("BONUS 1: Hierarchical Clustering (Ward Linkage)")
+print("1. Hierarchical Clustering (Ward Linkage)")
 print("==================================================")
 linkage_matrix = linkage(X_all_proc, method='ward')
 print("Linkage matrix shape:", linkage_matrix.shape)
 print("Observation: Dendrogram splits into 3 major operational branches (validating K = 3).")
 
 print("\n==================================================")
-print("BONUS 2: Three-Tier Operational Intervention Priority")
+print("2. Three-Tier Operational Intervention Priority")
 print("==================================================")
 interv_df = pd.DataFrame({
     'Predicted_Delay_Hours': np.round(y_pred_reg, 2),
@@ -98,4 +98,5 @@ def assign_priority(row):
 
 interv_df['Intervention_Priority'] = interv_df.apply(assign_priority, axis=1)
 print(interv_df['Intervention_Priority'].value_counts().to_frame("Shipment Count"))
-print("\nBonus execution complete!")
+print("\nExecution complete successfully!")
+
