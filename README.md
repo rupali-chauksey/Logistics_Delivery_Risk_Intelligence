@@ -68,10 +68,15 @@ To prevent data leakage and lookahead bias, the pipeline enforces strict validat
 Two key operational features were engineered using only pre-outcome variables:
 
 1. **`total_pre_delivery_process_hours`**:
-   $$\text{Total Pre-Delivery Process Hours} = \text{warehouse\_processing\_hours} + \text{dispatch\_delay\_hours} + \text{handling\_time\_hours}$$
+   ```python
+   total_pre_delivery_process_hours = warehouse_processing_hours + dispatch_delay_hours + handling_time_hours
+   ```
    - *Planner Utility*: Quantifies the total bottleneck accumulated inside the hub before the cargo leaves the facility.
+
 2. **`process_time_ratio`**:
-   $$\text{Process Time Ratio} = \frac{\text{total\_pre\_delivery\_process\_hours}}{\text{expected\_delivery\_hours}}$$
+   ```python
+   process_time_ratio = total_pre_delivery_process_hours / expected_delivery_hours
+   ```
    - *Planner Utility*: Measures what fraction of the total planned delivery SLA has already been consumed by internal warehouse operations.
 
 ---
@@ -129,7 +134,7 @@ Two key operational features were engineered using only pre-outcome variables:
 
 K-Means clustering was applied to pre-outcome characteristics (excluding all target and post-outcome data).
 
-- **Optimal Cluster Count**: Silhouette score analysis identified **$K = 3$** as optimal.
+- **Optimal Cluster Count**: Silhouette score analysis identified **K = 3** as optimal.
 - **Cluster Profiles**:
   - **Cluster 0 (Standard Regional Freight)**: Medium distance routes (~540 km), standard warehouse turnaround, moderate delay risk.
   - **Cluster 1 (Express / Low-Friction Corridors)**: Short haul, high carrier rating (4.2/5), minimal warehouse lag. Lowest delay rate (~58.1%).
@@ -143,7 +148,7 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
 ## 8. Operational Recommendations for RouteWise Planners
 
 1. **Pre-Transit Warehouse Clearance**:
-   - Because internal processing time drives over 45% of predictive delay importance, planners must intervene *before* vehicles depart. Packages waiting $\ge 3.5\text{ hours}$ in warehouse sorting should be fast-tracked to the front of loading queues.
+   - Because internal processing time drives over 45% of predictive delay importance, planners must intervene *before* vehicles depart. Packages waiting >= 3.5 hours in warehouse sorting should be fast-tracked to the front of loading queues.
 2. **Dynamic SLA Buffering for Adverse Weather**:
    - Storm and heavy rain conditions increase road delays by an average of 2.2 hours. Automated booking systems should dynamically pad customer ETA windows when severe weather alerts are active.
 3. **Targeted Carrier Reallocation**:
@@ -164,10 +169,10 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
 
 ### 1. Hierarchical Clustering & Dendrogram:
 - Agglomerative clustering with Ward's minimum variance linkage was applied to the unsupervised feature set.
-- Cutting the dendrogram at distance $\approx 15$ yields **3 distinct main branches**, independently validating the $K = 3$ choice from K-Means.
+- Cutting the dendrogram at distance threshold around 15 yields **3 distinct main branches**, independently validating the K = 3 choice from K-Means.
 
 ### 2. DBSCAN Density-Based Clustering & Noise Analysis:
-- DBSCAN classified $>90\%$ of points as noise (`-1`).
+- DBSCAN classified > 90% of points as noise (-1).
 - *Insight:* High-dimensional one-hot encoded sparse spaces result in uniform pairwise distances, making density-based clustering ineffective compared to distance-based partitioning (K-Means) and hierarchical agglomeration.
 
 ### 3. Three-Tier Operational Intervention Priority Framework:
@@ -177,9 +182,9 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
 
 | Priority Tier | Trigger Criteria | Planner Action on Operations Floor |
 |---|---|---|
-| **Tier 1: High Priority** | $\text{Risk Prob} \ge 70\%$ **AND** $\text{Predicted Delay} \ge 5.0\text{h}$ | **Immediate Action**: Expedite dock clearance, reassign high-tier carrier, proactively alert customer SLA desk. |
-| **Tier 2: Medium Priority** | $\text{Risk Prob} \ge 50\%$ **OR** $\text{Predicted Delay} \ge 3.0\text{h}$ | **Active Monitoring**: Track midway hub checkpoints; prioritize unloading at intermediate transit points. |
-| **Tier 3: Low Priority** | $\text{Risk Prob} < 50\%$ **AND** $\text{Predicted Delay} < 3.0\text{h}$ | **Standard Dispatch**: Automated routing with standard milestone logging. |
+| **Tier 1: High Priority** | Risk Prob >= 70% AND Predicted Delay >= 5.0h | **Immediate Action**: Expedite dock clearance, reassign high-tier carrier, proactively alert customer SLA desk. |
+| **Tier 2: Medium Priority** | Risk Prob >= 50% OR Predicted Delay >= 3.0h | **Active Monitoring**: Track midway hub checkpoints; prioritize unloading at intermediate transit points. |
+| **Tier 3: Low Priority** | Risk Prob < 50% AND Predicted Delay < 3.0h | **Standard Dispatch**: Automated routing with standard milestone logging. |
 
 ### 4. Real-World Production Data Source Recommendation:
 - **Real-Time IoT GPS & Vehicle Telematics Stream**: Continuous GPS speed, driver rest-stop dwell times, and live traffic radar APIs enable dynamic en-route ETA adjustments and proactive re-routing.
