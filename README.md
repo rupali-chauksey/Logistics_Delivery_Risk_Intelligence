@@ -14,6 +14,8 @@
 - **GitHub Repository**: [https://github.com/rupali-chauksey/logistics_delivery_risk_intelligence](https://github.com/rupali-chauksey/logistics_delivery_risk_intelligence)
 - **Primary Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
 - **Dataset**: [`logistics_delivery_delay.csv`](./logistics_delivery_delay.csv)
+- **Dependencies**: [`requirements.txt`](./requirements.txt)
+- **Core Technologies**: Python 3, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
 
 ---
 
@@ -258,10 +260,10 @@ By coupling continuous delay magnitude predictions with classification risk prob
 
 ## Dependencies & Setup Instructions
 
-Install the necessary Python libraries using pip:
+Install all required dependencies with a single command:
 
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn scipy jupyter
+pip install -r requirements.txt
 ```
 
 ---
