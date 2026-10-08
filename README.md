@@ -22,14 +22,18 @@ This project delivers an end-to-end Machine Learning intelligence pipeline addre
 2. **Decisioning (Classification)**: Flagging shipments as delay risks (`delay_required = 1`) to trigger immediate proactive intervention on the hub floor.
 3. **Understanding (Unsupervised Clustering & PCA)**: Discovering hidden bottleneck corridors and operational profiles across the freight network.
 
-```
-+----------------------------------------------------------------------------------------------------+
-|                                 RouteWise ML Intelligence Pipeline                                 |
-+----------------------------------------------------------------------------------------------------+
-|  1. Pre-Transit Hub Data  -->  2. ML Risk Models  -->  3. Floor Action Matrix  -->  4. Proactive ETA |
-|  (Warehouse/Carrier/Mode)     (Reg: Delay Hours)       (Tier 1/2/3 Priority)        (No Surprises) |
-|                               (Clf: Risk Prob)                                                     |
-+----------------------------------------------------------------------------------------------------+
+```mermaid
+flowchart LR
+    A["📦 1. Pre-Transit Hub Data<br/>• Hubs & Shipping Modes<br/>• Warehouse & Handling Lag<br/>• Carrier Performance Score"] --> B["⚙️ 2. ML Pipelines<br/>• Chronological Train Split<br/>• Isolated Scaling & Encoders<br/>• Operational Feature Ratios"]
+    B --> C["🤖 3. ML Risk Engines<br/>• Regression: Delay Hours<br/>• Classification: Risk Prob<br/>• Clustering: Corridor PCA"]
+    C --> D["🚨 4. Action Matrix<br/>• Tier 1: Emergency Expedite<br/>• Tier 2: Priority Warning<br/>• Tier 3: Autonomous Routing"]
+    D --> E["🎯 5. Proactive ETA<br/>• Pre-Arrival Customer Alert<br/>• Zero SLA Breaches"]
+
+    style A fill:#e3f2fd,stroke:#1565c0,stroke-width:2px,color:#0d47a1
+    style B fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#bf360c
+    style C fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px,color:#1b5e20
+    style D fill:#fbe9e7,stroke:#d84315,stroke-width:2px,color:#b71c1c
+    style E fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px,color:#4a148c
 ```
 
 ---
@@ -68,41 +72,39 @@ The pipeline is built on `logistics_delivery_delay.csv`, containing 720 shipment
 
 To understand how individual features interact within RouteWise Logistics, the diagram below maps the lifecycle of a consignment from origin booking to destination delivery:
 
-```
-+------------------------------------------------------------------------------------+
-|                             RouteWise Logistics Network Flow                       |
-+------------------------------------------------------------------------------------+
+```mermaid
+flowchart TD
+    subgraph OriginFacility ["🏢 1. Origin Facility & Pre-Transit Bottlenecks"]
+        OH["Origin Hubs<br/>(North / South / East / West)"] --> WP["Warehouse Processing<br/>(warehouse_processing_hours)"]
+        WP --> HT["Cargo Handling<br/>(handling_time_hours)"]
+        HT --> DD["Dispatch Lag<br/>(dispatch_delay_hours)"]
+        DD --> FE["Accumulated Pre-Departure Friction<br/>• total_pre_delivery_process_hours<br/>• process_time_ratio (SLA Drain)"]
+    end
 
-   [ ORIGIN HUB ]
-   (North / South / East / West)
-         │
-         ▼
-   [ PRE-TRANSIT PROCESSING ] ─────────────► [ INTERNAL BOTTLENECK ACCUMULATION ]
-   • warehouse_processing_hours               • total_pre_delivery_process_hours
-   • handling_time_hours                      • process_time_ratio (SLA Drain)
-   • dispatch_delay_hours
-         │
-         ▼
-   [ MODAL TRANSIT DISPATCH ]
-   • Carrier: A, B, C, D (carrier_rating)
-   • Mode: Road, Rail, Air
-   • Cargo: distance_km, package_weight_kg
-         │
-         ├───► [ ROUTE FRICTION / DELAY DRIVERS ]
-         │     • weather_condition (Clear, Rain, Fog, Storm)
-         │     • traffic_level (Low, Medium, High, Severe)
-         ▼
-   [ DESTINATION TYPE ]
-   (Metro, Industrial, Rural, Tier-2 City)
-         │
-         ▼
-   ================================================================================
-   [ OPERATIONAL OUTCOME & TARGETS ]
-   • Expected Delivery SLA : expected_delivery_hours
-   • Delay Magnitude (Reg) : delivery_delay_hours  (Forecasted)
-   • Actionable Risk (Clf) : delay_required (1 = Delay Risk, 0 = On-Time)
-   • Post-Outcome (Excl.)  : actual_delivery_hours (Known ONLY after arrival)
-   ================================================================================
+    subgraph ModalTransit ["🚚 2. Multi-Modal Transit & Route Friction"]
+        FE --> Carrier["Carrier Selection<br/>(Carrier A / B / C / D | carrier_rating)"]
+        Carrier --> Mode["Shipping Mode<br/>(Road / Rail / Air)"]
+        Mode --> Friction["Route Friction Drivers<br/>• weather_condition (Clear, Rain, Fog, Storm)<br/>• traffic_level (Low, Medium, High, Severe)<br/>• distance_km & package_weight_kg"]
+    end
+
+    subgraph DestinationZone ["📍 3. Destination Regional Context"]
+        Friction --> Dest["Destination Region<br/>(Metro / Industrial / Rural / Tier-2 City)"]
+        Dest --> SLA["Contracted SLA Benchmark<br/>(expected_delivery_hours)"]
+    end
+
+    subgraph ModelOutputs ["🎯 4. Supervised Intelligence Targets"]
+        SLA --> RegOut["Forecasted Delay Magnitude (Hours)<br/>delivery_delay_hours [Regression Target]"]
+        SLA --> ClfOut["Proactive Delay Risk Decision (0/1)<br/>delay_required [Classification Target]"]
+        SLA -.-> LeakGuard["🚫 Barred to Prevent Target Leakage<br/>actual_delivery_hours (Known ONLY post-delivery)"]
+    end
+
+    style OriginFacility fill:#e1f5fe,stroke:#0288d1,stroke-width:2px,color:#01579b
+    style ModalTransit fill:#fff8e1,stroke:#ffa000,stroke-width:2px,color:#ff6f00
+    style DestinationZone fill:#e8f5e9,stroke:#43a047,stroke-width:2px,color:#1b5e20
+    style ModelOutputs fill:#fce4ec,stroke:#d81b60,stroke-width:2px,color:#880e4f
+    style LeakGuard fill:#ffebee,stroke:#c62828,stroke-width:2px,stroke-dasharray: 5 5,color:#b71c1c
+    style RegOut fill:#e0f2f1,stroke:#00897b,stroke-width:2px,color:#004d40
+    style ClfOut fill:#ede7f6,stroke:#5e35b1,stroke-width:2px,color:#311b92
 ```
 
 ### 🛡️ Pre-Outcome vs. Post-Outcome Variable Taxonomy (Leakage Prevention)
