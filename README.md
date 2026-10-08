@@ -13,7 +13,7 @@
 - **Author / Candidate**: Rupali Chouksey
 - **Assignment Project**: Logistics Delivery Risk Intelligence (End-to-End Machine Learning Pipeline)
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
-- **GitHub Repository**: [https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence](https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence)
+- **GitHub Repository**: [https://github.com/rupali-chauksey/logistics_delivery_risk_intelligence](https://github.com/rupali-chauksey/logistics_delivery_risk_intelligence)
 - **Primary Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
 - **Dataset**: [`logistics_delivery_delay.csv`](./logistics_delivery_delay.csv)
 - **Core Technologies**: Python 3, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
@@ -273,8 +273,8 @@ pip install pandas numpy scikit-learn matplotlib seaborn scipy jupyter
 
 1. **Clone the Repository**:
    ```bash
-   git clone https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence.git
-   cd Logistics_Delivery_Risk_Intelligence
+   git clone https://github.com/rupali-chauksey/logistics_delivery_risk_intelligence.git
+   cd logistics_delivery_risk_intelligence
    ```
 2. **Launch Jupyter Notebook**:
    ```bash
