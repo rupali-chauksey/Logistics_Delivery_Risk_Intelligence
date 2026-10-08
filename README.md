@@ -2,7 +2,8 @@
 ## Delivery Delay Prediction & Operational Intervention for a Multi-Modal Logistics Network
 
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
-- **Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
+- **Main Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
+- **Bonus Standalone Script**: [`bonus_challenges.py`](./bonus_challenges.py)
 - **Dataset**: [`logistics_delivery_delay.csv`](./logistics_delivery_delay.csv)
 - **Language & Frameworks**: Python 3, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
 
@@ -126,7 +127,7 @@ Two key operational features were engineered using only pre-outcome variables:
 ![Feature Importance and PCA](./assets/04_feature_importance_and_pca.png)
 
 - **Top Model Predictors**: `total_pre_delivery_process_hours`, `warehouse_processing_hours`, `distance_km`, and `carrier_rating` drive the largest predictive weight.
-- **2D PCA Projection**: Compresses the multi-feature space into 2 principal components, showing clear operational clusters across modal networks (Air, Rail, Road).
+- **2D PCA Projection**: Compresses the multi-feature space into 2 principal dimensions, showing clear operational clusters across modal networks (Air, Rail, Road).
 
 ---
 
@@ -165,9 +166,9 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
 
 ---
 
-## 10. Bonus Challenge Solutions
+## 10. Complete Bonus Challenge Solutions
 
-### 1. Hierarchical Clustering & Dendrogram:
+### 1. Hierarchical Clustering & Ward Dendrogram:
 - Agglomerative clustering with Ward's minimum variance linkage was applied to the unsupervised feature set.
 - Cutting the dendrogram at distance threshold around 15 yields **3 distinct main branches**, independently validating the K = 3 choice from K-Means.
 
@@ -175,23 +176,39 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
 - DBSCAN classified > 90% of points as noise (-1).
 - *Insight:* High-dimensional one-hot encoded sparse spaces result in uniform pairwise distances, making density-based clustering ineffective compared to distance-based partitioning (K-Means) and hierarchical agglomeration.
 
-### 3. Three-Tier Operational Intervention Priority Framework:
+### 3. DBSCAN K-Distance Graph (Elbow Curve Analysis):
+- A sorted 5-nearest neighbors distance curve confirmed a smooth, continuous rise with no sharp inflection point, mathematically proving the absence of dense local cluster cores in the sparse feature space.
+
+### 4. Three-Tier Operational Intervention Priority Framework:
 
 ### 🚨 Operational Priority Intervention Breakdown
 ![Intervention Priority Framework](./assets/06_intervention_priority_breakdown.png)
 
-| Priority Tier | Trigger Criteria | Planner Action on Operations Floor |
-|---|---|---|
-| **Tier 1: High Priority** | Risk Prob >= 70% AND Predicted Delay >= 5.0h | **Immediate Action**: Expedite dock clearance, reassign high-tier carrier, proactively alert customer SLA desk. |
-| **Tier 2: Medium Priority** | Risk Prob >= 50% OR Predicted Delay >= 3.0h | **Active Monitoring**: Track midway hub checkpoints; prioritize unloading at intermediate transit points. |
-| **Tier 3: Low Priority** | Risk Prob < 50% AND Predicted Delay < 3.0h | **Standard Dispatch**: Automated routing with standard milestone logging. |
+| Priority Tier | Trigger Criteria | Planner Action on Operations Floor | Evaluation Count |
+|---|---|---|:---:|
+| **Tier 1: High Priority** | Risk Prob >= 70% AND Predicted Delay >= 5.0h | **Immediate Action**: Expedite dock clearance, reassign high-tier carrier, proactively alert customer SLA desk. | **69 shipments** |
+| **Tier 2: Medium Priority** | Risk Prob >= 50% OR Predicted Delay >= 3.0h | **Active Monitoring**: Track midway hub checkpoints; prioritize unloading at intermediate transit points. | **64 shipments** |
+| **Tier 3: Low Priority** | Risk Prob < 50% AND Predicted Delay < 3.0h | **Standard Dispatch**: Automated routing with standard milestone logging. | **11 shipments** |
 
-### 4. Real-World Production Data Source Recommendation:
+### 5. Financial SLA Cost-Benefit & ROI Simulation:
+By evaluating proactive interventions on Tier 1 consignments (assuming $150 late delivery penalty, $35 intervention operating cost, and 65% remediation rate):
+
+| Financial ROI Metric | Value |
+|---|---|
+| **Tier 1 Shipments Targeted** | 69 shipments |
+| **True Delayed Shipments in Target Group** | 62 shipments (89.9% precision) |
+| **Unmanaged SLA Penalty Exposure** | $9,300.00 |
+| **Total Intervention Operating Cost** | $2,415.00 |
+| **Penalties Saved (65% Remediation Rate)** | $6,045.00 |
+| **Net Financial Benefit** | **$3,630.00** |
+| **Estimated Return on Investment (ROI)** | **150.3%** |
+
+### 6. Real-World Production Telematics Recommendation:
 - **Real-Time IoT GPS & Vehicle Telematics Stream**: Continuous GPS speed, driver rest-stop dwell times, and live traffic radar APIs enable dynamic en-route ETA adjustments and proactive re-routing.
 
 ---
 
-## 11. How to Run the Project
+## 11. Standalone Execution & How to Run
 
 ### Prerequisites:
 Install standard Python dependencies:
@@ -200,11 +217,15 @@ pip install pandas numpy scikit-learn matplotlib seaborn scipy jupyter
 ```
 
 ### Running the Notebook:
-Launch Jupyter and open the notebook:
 ```bash
 jupyter notebook logistics_delivery_delay_analysis.ipynb
 ```
 Select your active Python kernel and click **Run All**. The notebook executes top-to-bottom cleanly without warnings or errors.
+
+### Running the Standalone Bonus Script:
+```bash
+python bonus_challenges.py
+```
 
 ---
 
@@ -214,7 +235,7 @@ Select your active Python kernel and click **Run All**. The notebook executes to
    - Pipelines and Composite Estimators: [https://scikit-learn.org/stable/modules/compose.html](https://scikit-learn.org/stable/modules/compose.html)
    - Preprocessing & Imputation (`SimpleImputer`, `StandardScaler`, `OneHotEncoder`): [https://scikit-learn.org/stable/modules/preprocessing.html](https://scikit-learn.org/stable/modules/preprocessing.html)
    - Linear Regression & Ensemble Classifiers (`DecisionTreeClassifier`, `RandomForestClassifier`): [https://scikit-learn.org/stable/modules/ensemble.html](https://scikit-learn.org/stable/modules/ensemble.html)
-   - Clustering Algorithms (`KMeans`, `DBSCAN`): [https://scikit-learn.org/stable/modules/clustering.html](https://scikit-learn.org/stable/modules/clustering.html)
+   - Clustering Algorithms (`KMeans`, `DBSCAN`, `NearestNeighbors`): [https://scikit-learn.org/stable/modules/clustering.html](https://scikit-learn.org/stable/modules/clustering.html)
    - Dimensionality Reduction (`PCA`): [https://scikit-learn.org/stable/modules/decomposition.html#pca](https://scikit-learn.org/stable/modules/decomposition.html#pca)
 2. **SciPy Cluster Documentation**:
    - Hierarchical Clustering & Dendrograms (`scipy.cluster.hierarchy`): [https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html)
