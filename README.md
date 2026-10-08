@@ -1,7 +1,17 @@
 # Logistics Delivery Risk Intelligence
 ## Predictive Delay Modeling & Operational Intervention System for a Multi-Modal Freight Network
 
-- **Project**: Logistics Delivery Risk Intelligence (End-to-End Machine Learning Pipeline)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
+[![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-1.4%2B-F7931E?style=flat-square&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![Pandas](https://img.shields.io/badge/Pandas-2.0%2B-150458?style=flat-square&logo=pandas&logoColor=white)](https://pandas.pydata.org/)
+[![NumPy](https://img.shields.io/badge/NumPy-1.26%2B-013243?style=flat-square&logo=numpy&logoColor=white)](https://numpy.org/)
+[![SciPy](https://img.shields.io/badge/SciPy-Clustering-8CAAE6?style=flat-square&logo=scipy&logoColor=white)](https://scipy.org/)
+[![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=flat-square&logo=jupyter&logoColor=white)](https://jupyter.org/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Pipeline Status](https://img.shields.io/badge/Pipeline-100%25%20Verified-brightgreen?style=flat-square)]()
+
+- **Author / Candidate**: Rupali Chouksey
+- **Assignment Project**: Logistics Delivery Risk Intelligence (End-to-End Machine Learning Pipeline)
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
 - **GitHub Repository**: [https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence](https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence)
 - **Primary Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
