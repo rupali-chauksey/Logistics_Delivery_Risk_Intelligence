@@ -21,7 +21,7 @@ This project implements an end-to-end Machine Learning intelligence pipeline add
 
 ---
 
-## 2. Dataset Architecture & Summary
+## 2. Dataset Architecture & Exploratory Data Analysis
 
 The project is built on `logistics_delivery_delay.csv`, containing 720 shipment records sampled every 3 hours between **1 April 2026 and 30 June 2026**.
 
@@ -38,6 +38,9 @@ The project is built on `logistics_delivery_delay.csv`, containing 720 shipment 
 | **Classification Target** | `delay_required` (Binary flag: 1 = delay risk, 0 = on-time) |
 | **Post-Outcome Field** | `actual_delivery_hours` (Determined strictly after final delivery) |
 | **Target Imbalance** | ~69.31% positive class rate (imbalanced towards delays) |
+
+### 📊 Dataset Distributions & Operational Delay Patterns
+![EDA Dataset Distributions](./assets/01_eda_dataset_distributions.png)
 
 ---
 
@@ -81,6 +84,10 @@ Two key operational features were engineered using only pre-outcome variables:
 - **Evaluation Period Metrics**:
   - **MAE**: **`1.3361 hours`**
   - **RMSE**: **`1.7280 hours`**
+
+### 📈 Regression: Actual vs. Predicted Delivery Delay
+![Linear Regression Actual vs Predicted](./assets/02_regression_actual_vs_predicted.png)
+
 - **Error Pattern Analysis**:
   - The model performs reliably across typical delay ranges (2 to 6 hours).
   - It tends to underpredict extreme delays (>8 hours) because Linear Regression models additive relationships, whereas severe weather combined with traffic congestion compounds non-linearly.
@@ -98,6 +105,9 @@ Two key operational features were engineered using only pre-outcome variables:
 | **Recall** | **92.93%** | **91.82%** |
 | **F1-Score** | 0.8351 | **0.8487** |
 
+### 📊 Confusion Matrix & Classifier Comparison
+![Classification Performance](./assets/03_classification_metrics_comparison.png)
+
 #### Why Recall is the Critical Operational Metric in Logistics:
 - **False Negative (Missed Delay)**: The system predicts on-time, but the parcel arrives late. The customer is caught off-guard, SLA penalties occur, and client trust is damaged.
 - **False Positive (False Alarm)**: The system flags a delay risk for a shipment that would arrive on schedule. A planner spends 2 minutes reviewing the manifest or checking driver status—a minor operational overhead.
@@ -105,7 +115,17 @@ Two key operational features were engineered using only pre-outcome variables:
 
 ---
 
-## 6. Unsupervised Clustering & Network Patterns
+## 6. Feature Importance & PCA Dimensionality Reduction
+
+### 🔍 Top Decision Drivers & 2D PCA Map
+![Feature Importance and PCA](./assets/04_feature_importance_and_pca.png)
+
+- **Top Model Predictors**: `total_pre_delivery_process_hours`, `warehouse_processing_hours`, `distance_km`, and `carrier_rating` drive the largest predictive weight.
+- **2D PCA Projection**: Compresses the multi-feature space into 2 principal components, showing clear operational clusters across modal networks (Air, Rail, Road).
+
+---
+
+## 7. Unsupervised Clustering & Operating Patterns
 
 K-Means clustering was applied to pre-outcome characteristics (excluding all target and post-outcome data).
 
@@ -115,12 +135,8 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
   - **Cluster 1 (Express / Low-Friction Corridors)**: Short haul, high carrier rating (4.2/5), minimal warehouse lag. Lowest delay rate (~58.1%).
   - **Cluster 2 (Bottleneck Corridors — Critical Focus)**: Long-haul distances (~820 km), high warehouse processing hours (4.6h), and highest delay rate (**75.3%**, average delay **5.6 hours**).
 
----
-
-## 7. PCA & Dimensionality Reduction
-
-- Principal Component Analysis (PCA) was applied to reduce the unsupervised feature set into 2 principal dimensions.
-- 2D PCA plots visually confirm clean separation between operational modes and identify structural clusters without using target variables.
+### 🎯 K-Means Clusters & Hierarchical Dendrogram
+![K-Means and Hierarchical Dendrogram](./assets/05_kmeans_and_dendrogram.png)
 
 ---
 
@@ -155,6 +171,9 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
 - *Insight:* High-dimensional one-hot encoded sparse spaces result in uniform pairwise distances, making density-based clustering ineffective compared to distance-based partitioning (K-Means) and hierarchical agglomeration.
 
 ### 3. Three-Tier Operational Intervention Priority Framework:
+
+### 🚨 Operational Priority Intervention Breakdown
+![Intervention Priority Framework](./assets/06_intervention_priority_breakdown.png)
 
 | Priority Tier | Trigger Criteria | Planner Action on Operations Floor |
 |---|---|---|
