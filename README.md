@@ -2,8 +2,7 @@
 ## Delivery Delay Prediction & Operational Intervention for a Multi-Modal Logistics Network
 
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
-- **Primary Analysis**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
-- **Operational Strategy Script**: [`bonus_challenges.py`](./bonus_challenges.py)
+- **Primary Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
 - **Dataset**: [`logistics_delivery_delay.csv`](./logistics_delivery_delay.csv)
 - **Tooling**: Python, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
 

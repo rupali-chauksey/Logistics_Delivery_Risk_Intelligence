@@ -4,4 +4,6 @@ __pycache__/
 *.pyo
 .env
 .DS_Store
-
+*.zip
+*.pdf
+bonus_challenges.py
