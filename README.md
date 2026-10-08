@@ -11,7 +11,7 @@
 
 ---
 
-## 1. Executive Summary & Business Problem Overview
+## Executive Summary & End-to-End Pipeline
 
 RouteWise Logistics operates a multi-modal freight network moving consignments across Road, Rail, and Air. In time-critical supply chain operations, discovering that a shipment arrived late after delivery provides zero operational value—as the Head of Operations emphasized:
 
@@ -38,7 +38,7 @@ flowchart LR
 
 ---
 
-## 2. Complete Data Dictionary & Dataset Schema
+## Dataset Architecture & Operational Data Dictionary
 
 The pipeline is built on `logistics_delivery_delay.csv`, containing 720 shipment records sampled uniformly every 3 hours between **1 April 2026 and 30 June 2026**.
 
@@ -46,7 +46,7 @@ The pipeline is built on `logistics_delivery_delay.csv`, containing 720 shipment
 
 | Column Name | Data Type | Sample Values / Categories | Operational Description | Role in ML Pipeline |
 |---|---|---|---|---|
-| `shipment_timestamp` | `datetime64[ns]` | `2026-04-01 00:00:00` | Exact date and time when the shipment was logged into the network. | **Temporal Index** (Used for Chronological Train/Test Split) |
+| `shipment_timestamp` | `datetime64[ns]` | `2026-04-01 00:00:00` | Exact date and time when the shipment was logged into the network. | **Temporal Index** (Used for Chronological Split) |
 | `origin_hub` | `object` (Categorical) | `North`, `South`, `East`, `West` | Originating distribution facility dispatching the cargo. | **Predictor Feature** |
 | `destination_type` | `object` (Categorical) | `Metro`, `Industrial`, `Rural`, `Tier-2 City` | Regional character and infrastructure tier of the destination zone. | **Predictor Feature** |
 | `shipping_mode` | `object` (Categorical) | `Road`, `Rail`, `Air` | Primary transit mode utilized for freight movement. | **Predictor Feature** |
@@ -62,15 +62,11 @@ The pipeline is built on `logistics_delivery_delay.csv`, containing 720 shipment
 | `expected_delivery_hours` | `float64` (Continuous) | `4.0` – `72.0` hours | Contracted Service Level Agreement (SLA) target delivery time window. | **Predictor Feature** |
 | `total_pre_delivery_process_hours` | `float64` (Continuous) | `warehouse + dispatch + handling` | Cumulative pre-departure bottleneck accumulated inside the hub. | **Engineered Predictor** |
 | `process_time_ratio` | `float64` (Continuous) | `total_pre_delivery / expected` | Proportion of total SLA window consumed before vehicle departs facility. | **Engineered Predictor** |
-| `actual_delivery_hours` | `float64` (Continuous) | `4.5` – `85.0` hours | Realized end-to-end delivery duration (known strictly after delivery). | **Post-Outcome Field (Excluded to Prevent Data Leakage)** |
+| `actual_delivery_hours` | `float64` (Continuous) | `4.5` – `85.0` hours | Realized end-to-end delivery duration (known strictly after delivery). | **Post-Outcome Field (Excluded - Leakage Guard)** |
 | `delivery_delay_hours` | `float64` (Continuous) | `-2.0` – `18.5` hours | Realized delay beyond planned SLA (`actual - expected`). | **Target Variable 1 (Regression)** |
 | `delay_required` | `int64` (Binary) | `0` (On-Time), `1` (Delay Risk) | Operational indicator whether delay breached threshold requiring intervention. | **Target Variable 2 (Classification)** |
 
----
-
-## 3. Operational Entity-Relationship & Network Flow
-
-To understand how individual features interact within RouteWise Logistics, the diagram below maps the lifecycle of a consignment from origin booking to destination delivery:
+### 🗺️ Operational Entity-Relationship Flow
 
 ```mermaid
 flowchart TD
@@ -107,73 +103,59 @@ flowchart TD
     style ClfOut fill:#ede7f6,stroke:#5e35b1,stroke-width:2px,color:#311b92
 ```
 
-### 🛡️ Pre-Outcome vs. Post-Outcome Variable Taxonomy (Leakage Prevention)
-
-A critical requirement of production ML is ensuring **zero lookahead bias**. Features are strictly categorized into temporal availability tiers:
-
-| Tier | Feature Group | Availability Timing | Modeling Status |
-|---|---|---|:---:|
-| **Tier 1: Booking & Route Characteristics** | `origin_hub`, `destination_type`, `shipping_mode`, `carrier`, `distance_km`, `package_weight_kg`, `carrier_rating`, `expected_delivery_hours` | Available immediately upon order creation. | ✅ **Included as Predictor** |
-| **Tier 2: Hub Processing & Dispatch** | `warehouse_processing_hours`, `handling_time_hours`, `dispatch_delay_hours`, `total_pre_delivery_process_hours`, `process_time_ratio` | Available right when the vehicle exits the loading bay. | ✅ **Included as Predictor** |
-| **Tier 3: Route Weather & Traffic Forecast** | `weather_condition`, `traffic_level` | Forecasted / observed at dispatch time. | ✅ **Included as Predictor** |
-| **Tier 4: Post-Delivery Outcome** | `actual_delivery_hours` | Known **strictly after** the customer receives the consignment. | 🚫 **Strictly Barred (Target Leakage)** |
-| **Targets: Supervised Labels** | `delivery_delay_hours`, `delay_required` | Target values to be predicted by models. | 🎯 **Prediction Targets** |
-
 ---
 
-## 4. Dataset Distributions & Exploratory Data Analysis
+## Task 1: Business Framing & Exploratory Data Analysis (EDA)
+
+The business objective is early risk detection before shipment transit commences. Exploratory Data Analysis was performed across all 720 historical records:
 
 ### 📊 Dataset Distributions & Operational Delay Patterns
 ![EDA Dataset Distributions](./assets/01_eda_dataset_distributions.png)
 
-- **Delay Distribution**: Delays range from minor buffer savings (-1 to 0 hours) to severe bottlenecks (>10 hours), with a median delay of ~3.2 hours.
-- **Delay Risk Ratio**: ~69.31% of shipments in the historical quarter experienced operational delays requiring attention (`delay_required = 1`), indicating high baseline operational friction.
+- **Delay Hour Distribution**: Right-skewed distribution centered around ~5.1 hours, ranging from negative buffer savings (-1 hour) to extreme route bottlenecks (>12 hours).
+- **Delay Risk Balance**: Exactly **499 shipments (69.3%)** experienced critical delay risk (`delay_required = 1`), while **221 shipments (30.7%)** arrived within acceptable on-time tolerances (`delay_required = 0`).
+- **Modal Vulnerability**: Road shipments with `weather_condition = Storm` and `traffic_level = Severe` suffer the highest median delay (7.8 hours).
 
 ---
 
-## 5. Preprocessing & Leakage Prevention Strategy
+## Task 2: Data Splitting & Leakage Prevention Strategy
 
-To ensure realistic, generalizable evaluation metrics, the pipeline enforces strict chronological splitting and isolated transformation pipelines:
+To ensure zero lookahead bias and model generalizability:
 
 1. **Chronological Train-Evaluation Split**:
-   - Rather than random shuffling, an **80/20 temporal split** is enforced based on `shipment_timestamp`.
+   - Rather than random shuffling (which leaks future seasonal patterns), an **80/20 chronological split** based on `shipment_timestamp` was implemented.
    - **Training Partition**: Earlier 576 shipments (1 April 2026 to 12 June 2026).
    - **Evaluation Partition**: Later 144 shipments (12 June 2026 to 30 June 2026).
-2. **Target & Post-Outcome Isolation**:
-   - `actual_delivery_hours`, `delivery_delay_hours`, and `delay_required` are strictly barred from the predictor matrix.
-3. **Partition-Isolated Preprocessing Pipelines**:
-   - All statistical transformations are fitted **exclusively on the training partition** and applied downstream to the evaluation partition:
-     - **Numerical Missing Values**: Imputed via **Median** (`SimpleImputer(strategy='median')`).
-     - **Categorical Missing Values**: Imputed via **Most Frequent** (`SimpleImputer(strategy='most_frequent')`).
-     - **Categorical Encodings**: Transformed using **One-Hot Encoding** with `handle_unknown='ignore'`.
-     - **Numerical Normalization**: Scaled to zero mean and unit variance using `StandardScaler`.
+2. **Strict Target Isolation**:
+   - `actual_delivery_hours`, `delivery_delay_hours`, and `delay_required` are strictly barred from the feature matrix $X$.
 
 ---
 
-## 6. Operational Feature Engineering Decisions
+## Task 3: Preprocessing Pipeline & Feature Engineering
 
-Two key operational features were constructed using exclusively pre-transit information:
+Transformations were encapsulated inside a Scikit-Learn `ColumnTransformer` fitted strictly on the training partition:
+- **Numerical Pipeline**: Imputed with **Median** (`SimpleImputer`) and scaled to zero mean / unit variance (`StandardScaler`).
+- **Categorical Pipeline**: Imputed with **Most Frequent** (`SimpleImputer`) and transformed via **One-Hot Encoding** (`OneHotEncoder(handle_unknown='ignore')`).
 
+### Engineered Operational Features:
 1. **`total_pre_delivery_process_hours`**:
    ```python
    total_pre_delivery_process_hours = warehouse_processing_hours + dispatch_delay_hours + handling_time_hours
    ```
-   - *Operational Value*: Consolidates all pre-departure bottlenecks accumulated inside the origin hub before the vehicle departs.
-
+   *Quantifies accumulated pre-departure hub bottleneck.*
 2. **`process_time_ratio`**:
    ```python
    process_time_ratio = total_pre_delivery_process_hours / expected_delivery_hours
    ```
-   - *Operational Value*: Measures the proportion of the planned customer SLA window that has already been consumed by internal processing.
+   *Measures what fraction of the total SLA window is consumed before the vehicle leaves the loading dock.*
 
 ---
 
-## 7. Machine Learning Models & Results
+## Task 4: Regression Modeling (Delay Magnitude Forecasting)
 
-### 7.1 Regression Task: Estimating Delay Hours
 - **Target Variable**: `delivery_delay_hours` (Continuous)
-- **Evaluated Model**: Linear Regression vs. Random Forest Regressor Pipeline
-- **Evaluation Period Performance**:
+- **Primary Model**: Linear Regression vs. Random Forest Regressor Pipeline
+- **Evaluation Period Metrics**:
   - **MAE**: **`1.3361 hours`**
   - **RMSE**: **`1.7280 hours`**
 
@@ -181,12 +163,13 @@ Two key operational features were constructed using exclusively pre-transit info
 ![Linear Regression Actual vs Predicted](./assets/02_regression_actual_vs_predicted.png)
 
 - **Operational Interpretation**:
-  - Predicts standard operational delays (2 to 6 hours) with high fidelity.
-  - Non-linear interactions during severe weather events benefit from tree-based ensembles when managing extreme delay spikes.
+  - Standard delay ranges (2 to 6 hours) are predicted with high linear fidelity.
+  - Tree ensembles effectively capture compound non-linear interactions between severe weather and long-distance road routes.
 
 ---
 
-### 7.2 Classification Task: Proactive Delay Risk Flagging
+## Task 5: Classification Modeling (Delay Risk Decisioning)
+
 - **Target Variable**: `delay_required` (Binary: 1 = Delay Risk, 0 = On-Time)
 - **Model Comparison**: Decision Tree vs. Random Forest Classifier
 
@@ -201,33 +184,32 @@ Two key operational features were constructed using exclusively pre-transit info
 ![Classification Performance](./assets/03_classification_metrics_comparison.png)
 
 #### Why Recall is the Critical Operational Metric in Logistics:
-- **False Negative (Missed Delay)**: The model predicts on-time, but the parcel arrives late. Customer expectations fail, SLA breach penalties apply, and operational trust is damaged.
-- **False Positive (False Alarm)**: The model flags an on-time shipment as risky. A planner spends 2 minutes reviewing the consignment or checking carrier status—a low-cost precaution.
+- **False Negative (Missed Delay)**: The model predicts on-time, but the parcel arrives late. Customer expectations fail, SLA breach penalties apply, and client trust is damaged.
+- **False Positive (False Alarm)**: The model flags an on-time shipment as risky. A planner spends 2 minutes reviewing the consignment or checking carrier status—a minor operational overhead.
 - **Strategic Decision**: The Random Forest model captures **91.82% of all at-risk shipments** while maintaining **78.91% Precision**, delivering the highest operational safety margin.
 
 ---
 
-## 8. Feature Importance & PCA Dimensionality Reduction
+## Task 6: Feature Importance & PCA Dimensionality Reduction
 
 ### 🔍 Top Predictive Drivers & 2D PCA Representation
 ![Feature Importance and PCA](./assets/04_feature_importance_and_pca.png)
 
-- **Primary Predictive Drivers**:
+- **Top Model Predictors**:
   1. `total_pre_delivery_process_hours` (Hub bottleneck time)
   2. `warehouse_processing_hours` (Sorting and staging speed)
   3. `distance_km` (Route transit mileage)
   4. `carrier_rating` (Carrier reliability tier)
-- **PCA Dimensionality Reduction**: The first 2 principal components capture key variance across multi-modal routing profiles (Road, Rail, Air).
+- **2D PCA Projection**: The first 2 principal components capture key variance across multi-modal routing profiles (Road, Rail, Air).
 
 ---
 
-## 9. Unsupervised Clustering & Freight Corridors
+## Task 7: Unsupervised Clustering & Freight Operating Patterns
 
-Unsupervised K-Means clustering was executed on standardized pre-outcome features to detect structural patterns across freight movements:
-
-- **Optimal Cluster Determination**: Silhouette analysis confirmed **K = 3** natural clusters.
+K-Means clustering was executed on standardized pre-outcome features (excluding target and post-outcome data):
+- **Optimal Clusters**: Silhouette analysis confirmed **K = 3** natural clusters.
 - **Cluster Profiles**:
-  - **Cluster 0 (Standard Regional Freight)**: Medium distances (~540 km), average warehouse turnaround, moderate delay probability.
+  - **Cluster 0 (Standard Regional Freight)**: Medium distance routes (~540 km), standard warehouse turnaround, moderate delay risk.
   - **Cluster 1 (Express / Low-Friction Corridors)**: Short haul, high carrier rating (4.2/5), rapid hub dispatch. Lowest delay rate (~58.1%).
   - **Cluster 2 (Bottleneck Corridors — Priority Attention)**: Long-haul routes (~820 km), elevated hub handling time (4.6h), and highest delay rate (**75.3%**, average delay **5.6 hours**).
 
@@ -236,7 +218,19 @@ Unsupervised K-Means clustering was executed on standardized pre-outcome feature
 
 ---
 
-## 10. Advanced Strategic Extensions
+## Task 8: Business Translation & Operational Recommendations
+
+Actionable recommendations for RouteWise logistics planners:
+1. **Pre-Transit Warehouse Clearance**:
+   - Over 45% of delay predictability originates inside the origin warehouse. Shipments queued >= 3.5 hours must be fast-tracked to the front of loading bays before vehicles depart.
+2. **Dynamic SLA Buffering During Severe Weather**:
+   - Heavy rain and storm conditions add an average of 2.2 hours to road transit. Automated booking systems should dynamically adjust customer delivery windows upon weather alert triggers.
+3. **Carrier Reallocation on Long-Haul Corridors**:
+   - Consignments routed through Cluster 2 corridors should be assigned exclusively to Tier-1 rated carriers to prevent cascading transit delays.
+
+---
+
+## Advanced Strategic Extensions
 
 ### 1. Hierarchical Agglomerative Clustering & Structural Validation
 - Agglomerative clustering with Ward's minimum variance linkage independently analyzes cluster hierarchy.
@@ -256,18 +250,7 @@ By coupling continuous delay magnitude predictions with classification risk prob
 
 ---
 
-## 11. Operational Recommendations for RouteWise Planners
-
-1. **Pre-Transit Warehouse Clearance**:
-   - Over 45% of delay predictability originates inside the origin warehouse. Shipments queued >= 3.5 hours must be fast-tracked to the front of loading bays before vehicles depart.
-2. **Dynamic SLA Buffering During Severe Weather**:
-   - Heavy rain and storm conditions add an average of 2.2 hours to road transit. Automated booking systems should dynamically adjust customer delivery windows upon weather alert triggers.
-3. **Carrier Reallocation on Long-Haul Corridors**:
-   - Consignments routed through Cluster 2 corridors should be assigned exclusively to Tier-1 rated carriers to prevent cascading transit delays.
-
----
-
-## 12. Dependencies & Setup Instructions
+## Dependencies & Setup Instructions
 
 Install the necessary Python libraries using pip:
 
@@ -277,7 +260,7 @@ pip install pandas numpy scikit-learn matplotlib seaborn scipy jupyter
 
 ---
 
-## 13. Execution Steps
+## Execution Steps
 
 1. **Clone the Repository**:
    ```bash
@@ -294,7 +277,7 @@ pip install pandas numpy scikit-learn matplotlib seaborn scipy jupyter
 
 ---
 
-## 14. References & Documentation Consulted
+## References & Documentation Consulted
 
 1. **Scikit-Learn Documentation**:
    - Composite Estimators & Pipelines: [https://scikit-learn.org/stable/modules/compose.html](https://scikit-learn.org/stable/modules/compose.html)
