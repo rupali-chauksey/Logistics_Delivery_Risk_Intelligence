@@ -1,14 +1,17 @@
 # Logistics Delivery Risk Intelligence
 ## Delivery Delay Prediction & Operational Intervention for a Multi-Modal Logistics Network
 
+- **Author / Candidate**: Rupali Chouksey
+- **Assignment**: Logistics Delivery Risk Intelligence (End-to-End ML Pipeline)
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
+- **GitHub Repository**: [https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence](https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence)
 - **Primary Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
 - **Dataset**: [`logistics_delivery_delay.csv`](./logistics_delivery_delay.csv)
-- **Tooling**: Python, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
+- **Core Technologies**: Python 3, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
 
 ---
 
-## 1. Project & Business Problem Overview
+## 1. Problem Statement Overview
 
 RouteWise Logistics operates a multi-modal freight network moving consignments across Road, Rail, and Air. In time-critical logistics, discovering that a shipment arrived late after delivery provides zero actionable value—as the Head of Operations emphasized:
 
@@ -21,7 +24,19 @@ This project delivers an end-to-end Machine Learning intelligence pipeline addre
 
 ---
 
-## 2. Dataset Architecture & Exploratory Data Analysis
+## 2. Solution Approach & Pipeline Architecture
+
+The solution implements a rigorous, leakage-free operational ML pipeline:
+- **Leakage Prevention**: Strictly isolates post-outcome metrics (`actual_delivery_hours`) and uses an 80/20 chronological time-series split.
+- **Preprocessing Pipeline**: Missing value imputation and encoding encapsulated inside Scikit-Learn `ColumnTransformer` fitted strictly on training data.
+- **Feature Engineering**: Derives operational metrics (`total_pre_delivery_process_hours`, `process_time_ratio`) from pre-departure data.
+- **Predictive Modeling**: Combines Linear Regression and Random Forest Regressors with high-recall Decision Tree and Random Forest Classifiers.
+- **Unsupervised Insights**: PCA 2D compression and K-Means clustering (validated via Hierarchical Dendrogram).
+- **Operational Decisioning**: Translates model outputs into a 3-Tier priority intervention matrix for logistics floor planners.
+
+---
+
+## 3. Dataset Architecture & Exploratory Data Analysis
 
 The pipeline analyzes `logistics_delivery_delay.csv`, containing 720 shipment records sampled every 3 hours between **1 April 2026 and 30 June 2026**.
 
@@ -44,7 +59,7 @@ The pipeline analyzes `logistics_delivery_delay.csv`, containing 720 shipment re
 
 ---
 
-## 3. Preprocessing & Leakage Prevention Strategy
+## 4. Preprocessing & Leakage Prevention Strategy
 
 To ensure zero lookahead bias and maintain strict pipeline integrity, the system enforces chronological separation and isolated transformations:
 
@@ -63,7 +78,7 @@ To ensure zero lookahead bias and maintain strict pipeline integrity, the system
 
 ---
 
-## 4. Operational Feature Engineering
+## 5. Operational Feature Engineering
 
 Two key operational features were constructed using exclusively pre-transit information:
 
@@ -81,9 +96,9 @@ Two key operational features were constructed using exclusively pre-transit info
 
 ---
 
-## 5. Model Training & Evaluation
+## 6. Machine Learning Models & Results
 
-### 5.1 Regression Task: Estimating Delay Hours
+### 6.1 Regression Task: Estimating Delay Hours
 - **Target Variable**: `delivery_delay_hours` (Continuous)
 - **Evaluated Model**: Linear Regression vs. Random Forest Regressor Pipeline
 - **Evaluation Period Performance**:
@@ -99,7 +114,7 @@ Two key operational features were constructed using exclusively pre-transit info
 
 ---
 
-### 5.2 Classification Task: Proactive Delay Risk Flagging
+### 6.2 Classification Task: Proactive Delay Risk Flagging
 - **Target Variable**: `delay_required` (Binary: 1 = Delay Risk, 0 = On-Time)
 - **Model Comparison**: Decision Tree vs. Random Forest Classifier
 
@@ -120,7 +135,7 @@ Two key operational features were constructed using exclusively pre-transit info
 
 ---
 
-## 6. Feature Importance & PCA Dimensionality Reduction
+## 7. Feature Importance & PCA Dimensionality Reduction
 
 ### 🔍 Top Predictive Drivers & 2D PCA Representation
 ![Feature Importance and PCA](./assets/04_feature_importance_and_pca.png)
@@ -134,7 +149,7 @@ Two key operational features were constructed using exclusively pre-transit info
 
 ---
 
-## 7. Unsupervised Clustering & Operating Corridors
+## 8. Unsupervised Clustering & Operating Corridors
 
 Unsupervised K-Means clustering was executed on standardized pre-outcome features to detect structural patterns across freight movements:
 
@@ -149,7 +164,7 @@ Unsupervised K-Means clustering was executed on standardized pre-outcome feature
 
 ---
 
-## 8. Strategic Operational Extensions
+## 9. Advanced Strategic Extensions
 
 ### 1. Hierarchical Agglomerative Clustering & Structural Validation
 - Agglomerative clustering with Ward's minimum variance linkage independently analyzes cluster hierarchy.
@@ -169,7 +184,7 @@ By coupling continuous delay magnitude predictions with classification risk prob
 
 ---
 
-## 9. Actionable Recommendations for RouteWise Planners
+## 10. Operational Recommendations for RouteWise Planners
 
 1. **Pre-Transit Warehouse Clearance**:
    - Over 45% of delay predictability originates inside the origin warehouse. Shipments queued >= 3.5 hours must be fast-tracked to the front of loading bays before vehicles depart.
@@ -180,15 +195,34 @@ By coupling continuous delay magnitude predictions with classification risk prob
 
 ---
 
-## 10. Pipeline Validation & Quality Assurance
+## 11. Dependencies & Setup Instructions
 
-- **Zero-Leakage Guarantee**: Temporal splitting and complete isolation of target/post-outcome variables ensure realistic, generalizable evaluation metrics.
-- **End-to-End Execution**: The pipeline runs top-to-bottom cleanly without warnings, broken kernel states, or missing dependencies.
-- **Honest Analytics**: Prioritizes an interpretable, leakage-free operational workflow over unvalidated complex models.
+Install the necessary Python libraries using pip:
+
+```bash
+pip install pandas numpy scikit-learn matplotlib seaborn scipy jupyter
+```
 
 ---
 
-## 11. References & Documentation Consulted
+## 12. Execution Steps
+
+1. **Clone or Download the Repository**:
+   ```bash
+   git clone https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence.git
+   cd Logistics_Delivery_Risk_Intelligence
+   ```
+2. **Launch Jupyter Notebook**:
+   ```bash
+   jupyter notebook logistics_delivery_delay_analysis.ipynb
+   ```
+3. **Run the Analysis**:
+   - In Jupyter, select the active Python kernel and click **Run All Cells**.
+   - The entire notebook executes sequentially top-to-bottom without warnings or errors.
+
+---
+
+## 13. References & Documentation Consulted
 
 1. **Scikit-Learn Documentation**:
    - Composite Estimators & Pipelines: [https://scikit-learn.org/stable/modules/compose.html](https://scikit-learn.org/stable/modules/compose.html)
