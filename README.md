@@ -3,6 +3,7 @@
 
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
 - **Main Notebook**: [`logistics_delivery_delay_analysis.ipynb`](./logistics_delivery_delay_analysis.ipynb)
+- **Bonus Script**: [`bonus_challenges.py`](./bonus_challenges.py)
 - **Dataset**: [`logistics_delivery_delay.csv`](./logistics_delivery_delay.csv)
 - **Language & Frameworks**: Python 3, Scikit-Learn, Pandas, NumPy, Matplotlib, Seaborn, SciPy
 
@@ -165,31 +166,23 @@ K-Means clustering was applied to pre-outcome characteristics (excluding all tar
 
 ---
 
-## 10. Bonus Challenge (Optional Tasks)
+## 10. Bonus Challenge (Selected 2 High-Impact Tasks)
 
-### 1. Hierarchical Clustering & Dendrogram:
-- Agglomerative Hierarchical Clustering using Ward's minimum variance linkage was applied to the unsupervised feature set.
-- Interpreting the dendrogram tree at distance threshold ~15 reveals **3 distinct main branches**, independently validating the $K = 3$ choice from K-Means.
+### 1. Hierarchical Agglomerative Clustering & Dendrogram:
+- Agglomerative clustering with Ward's minimum variance linkage was applied to the unsupervised feature set.
+- Interpreting the dendrogram tree at distance threshold ~15 reveals **3 distinct main branches**, independently validating the choice of $K = 3$ from K-Means.
 
-### 2. DBSCAN Density-Based Clustering & Noise Observations:
-- DBSCAN was applied (`eps=2.5, min_samples=5`), resulting in $>90\%$ of points being classified as noise (`-1`).
-- **Explanation (Why DBSCAN is not useful here)**: High-dimensional one-hot encoded sparse spaces result in uniform pairwise Euclidean distances. The data density is diffuse without dense local cluster cores, making distance-based partitioning (K-Means) and hierarchical agglomeration far superior to DBSCAN on this dataset.
-
-### 3. Low/Medium/High Intervention-Priority Framework:
-Using the completed model outputs (Regression delay magnitude + Random Forest risk probability):
+### 2. Three-Tier Operational Intervention Priority Framework:
+Combining regression delay hours with Random Forest risk probability generates actionable decision tiers for operations planners:
 
 ### 🚨 Operational Priority Intervention Breakdown
 ![Intervention Priority Framework](./assets/06_intervention_priority_breakdown.png)
 
-| Priority Level | Trigger Criteria | Planner Action on Operations Floor |
+| Priority Tier | Trigger Criteria | Planner Action on Operations Floor |
 |---|---|---|
-| **High Priority** | Risk Prob >= 70% AND Predicted Delay >= 5.0h | **Immediate Action**: Expedite dock clearance, reassign high-tier carrier, proactively alert customer SLA desk. |
-| **Medium Priority** | Risk Prob >= 50% OR Predicted Delay >= 3.0h | **Active Monitoring**: Track midway hub checkpoints; prioritize unloading at intermediate transit points. |
-| **Low Priority** | Risk Prob < 50% AND Predicted Delay < 3.0h | **Standard Dispatch**: Automated routing with standard milestone logging. |
-
-### 4. Real-World Production Data Source Recommendation:
-- **Recommended Data Source**: **Real-Time IoT GPS & Vehicle Telematics Stream**
-- **Business Rationale**: Continuous in-transit GPS speed, driver rest-stop dwell times, and live traffic radar APIs enable dynamic en-route ETA adjustments and proactive re-routing before a delay occurs.
+| **Tier 1: High Priority** | Risk Prob >= 70% AND Predicted Delay >= 5.0h | **Immediate Action**: Expedite dock clearance, reassign high-tier carrier, proactively alert customer SLA desk. |
+| **Tier 2: Medium Priority** | Risk Prob >= 50% OR Predicted Delay >= 3.0h | **Active Monitoring**: Track midway hub checkpoints; prioritize unloading at intermediate transit points. |
+| **Tier 3: Low Priority** | Risk Prob < 50% AND Predicted Delay < 3.0h | **Standard Dispatch**: Automated routing with standard milestone logging. |
 
 ---
 
@@ -208,6 +201,11 @@ jupyter notebook logistics_delivery_delay_analysis.ipynb
 ```
 Select your active Python kernel and click **Run All**. The notebook executes top-to-bottom cleanly without warnings or errors.
 
+### Running the Standalone Bonus Script:
+```bash
+python bonus_challenges.py
+```
+
 ---
 
 ## 12. References & Documentation Consulted
@@ -216,7 +214,7 @@ Select your active Python kernel and click **Run All**. The notebook executes to
    - Pipelines and Composite Estimators: [https://scikit-learn.org/stable/modules/compose.html](https://scikit-learn.org/stable/modules/compose.html)
    - Preprocessing & Imputation (`SimpleImputer`, `StandardScaler`, `OneHotEncoder`): [https://scikit-learn.org/stable/modules/preprocessing.html](https://scikit-learn.org/stable/modules/preprocessing.html)
    - Linear Regression & Ensemble Classifiers (`DecisionTreeClassifier`, `RandomForestClassifier`): [https://scikit-learn.org/stable/modules/ensemble.html](https://scikit-learn.org/stable/modules/ensemble.html)
-   - Clustering Algorithms (`KMeans`, `DBSCAN`): [https://scikit-learn.org/stable/modules/clustering.html](https://scikit-learn.org/stable/modules/clustering.html)
+   - Clustering Algorithms (`KMeans`): [https://scikit-learn.org/stable/modules/clustering.html](https://scikit-learn.org/stable/modules/clustering.html)
    - Dimensionality Reduction (`PCA`): [https://scikit-learn.org/stable/modules/decomposition.html#pca](https://scikit-learn.org/stable/modules/decomposition.html#pca)
 2. **SciPy Cluster Documentation**:
    - Hierarchical Clustering & Dendrograms (`scipy.cluster.hierarchy`): [https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html](https://docs.scipy.org/doc/scipy/reference/cluster.hierarchy.html)

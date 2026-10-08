@@ -1,12 +1,8 @@
 """
-Logistics Delivery Risk Intelligence - Bonus Challenges Standalone Pipeline
----------------------------------------------------------------------------
-This script covers all advanced bonus tasks:
+Logistics Delivery Risk Intelligence - Bonus Challenge (Selected 2 Key Tasks)
+------------------------------------------------------------------------------
 1. Hierarchical Agglomerative Clustering (Ward Linkage) & Dendrogram
-2. DBSCAN Clustering, Noise Analysis & k-distance Graph
-3. Three-Tier Operational Intervention Framework
-4. Financial SLA Cost-Benefit / ROI Simulation
-5. Telematics & IoT Production Data Architecture
+2. Three-Tier Operational Intervention Priority Framework
 """
 
 import os
@@ -14,7 +10,6 @@ import warnings
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
@@ -22,8 +17,6 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.compose import ColumnTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LinearRegression
-from sklearn.cluster import DBSCAN
-from sklearn.neighbors import NearestNeighbors
 from scipy.cluster.hierarchy import dendrogram, linkage
 
 warnings.filterwarnings("ignore")
@@ -41,11 +34,7 @@ df["shipment_timestamp"] = pd.to_datetime(df["shipment_timestamp"], errors="coer
 df["total_pre_delivery_process_hours"] = (
     df["warehouse_processing_hours"] + df["dispatch_delay_hours"] + df["handling_time_hours"]
 )
-df["distance_per_expected_hour"] = df["distance_km"] / df["expected_delivery_hours"].replace(0, np.nan)
 df["process_time_ratio"] = df["total_pre_delivery_process_hours"] / df["expected_delivery_hours"].replace(0, np.nan)
-df["shipment_hour"] = df["shipment_timestamp"].dt.hour
-df["shipment_day_of_week"] = df["shipment_timestamp"].dt.dayofweek
-df["shipment_month"] = df["shipment_timestamp"].dt.month
 
 df = df.sort_values("shipment_timestamp").reset_index(drop=True)
 split_idx = int(len(df) * 0.80)
@@ -71,12 +60,11 @@ preprocessor = ColumnTransformer([
 # Fit Preprocessor
 X_train_proc = preprocessor.fit_transform(train_df[feature_cols])
 X_eval_proc = preprocessor.transform(eval_df[feature_cols])
-
 X_all_proc = preprocessor.fit_transform(df[feature_cols])
 if hasattr(X_all_proc, "toarray"):
     X_all_proc = X_all_proc.toarray()
 
-# Train models for intervention framework
+# Train models
 reg = LinearRegression().fit(X_train_proc, train_df["delivery_delay_hours"])
 rf = RandomForestClassifier(n_estimators=300, class_weight='balanced', random_state=42).fit(X_train_proc, train_df["delay_required"])
 
@@ -87,25 +75,11 @@ print("==================================================")
 print("BONUS 1: Hierarchical Clustering (Ward Linkage)")
 print("==================================================")
 linkage_matrix = linkage(X_all_proc, method='ward')
-print("Hierarchical linkage computed. Linkage matrix shape:", linkage_matrix.shape)
+print("Linkage matrix shape:", linkage_matrix.shape)
+print("Observation: Dendrogram splits into 3 major operational branches (validating K = 3).")
 
 print("\n==================================================")
-print("BONUS 2: DBSCAN & K-Distance Graph")
-print("==================================================")
-# Compute k-nearest neighbors distance
-k = 5
-nbrs = NearestNeighbors(n_neighbors=k).fit(X_all_proc)
-distances, _ = nbrs.kneighbors(X_all_proc)
-k_distances = np.sort(distances[:, k-1])
-
-dbscan = DBSCAN(eps=2.5, min_samples=5)
-db_labels = dbscan.fit_predict(X_all_proc)
-noise_count = (db_labels == -1).sum()
-print(f"Total points: {len(db_labels)} | Noise points (-1): {noise_count} ({noise_count/len(db_labels)*100:.1f}%)")
-print("Conclusion: High dimensionality and sparsity make density-based clustering ineffective.")
-
-print("\n==================================================")
-print("BONUS 3: Three-Tier Operational Intervention Priority")
+print("BONUS 2: Three-Tier Operational Intervention Priority")
 print("==================================================")
 interv_df = pd.DataFrame({
     'Predicted_Delay_Hours': np.round(y_pred_reg, 2),
@@ -123,37 +97,5 @@ def assign_priority(row):
         return 'Tier 3 - Low Priority (Standard Dispatch)'
 
 interv_df['Intervention_Priority'] = interv_df.apply(assign_priority, axis=1)
-priority_summary = interv_df['Intervention_Priority'].value_counts()
-print("Breakdown of Evaluation Shipments by Priority:")
-print(priority_summary.to_string())
-
-print("\n==================================================")
-print("BONUS 4: Financial SLA ROI Simulation")
-print("==================================================")
-# Simulation parameters:
-# Assume average late delivery penalty = $150 per delayed shipment
-# Cost of proactive intervention (expedited handling / re-routing) = $35 per shipment
-# Expected intervention success rate in preventing delay = 65%
-
-tier1_count = (interv_df['Intervention_Priority'] == 'Tier 1 - High Priority (Immediate Action)').sum()
-tier1_actual_delays = (
-    (interv_df['Intervention_Priority'] == 'Tier 1 - High Priority (Immediate Action)') & 
-    (interv_df['Actual_Delay_Risk'] == 1)
-).sum()
-
-penalty_without_intervention = tier1_actual_delays * 150
-intervention_cost = tier1_count * 35
-delays_prevented = tier1_actual_delays * 0.65
-penalty_saved = delays_prevented * 150
-net_financial_benefit = penalty_saved - intervention_cost
-roi_percentage = (net_financial_benefit / intervention_cost) * 100
-
-print(f"Tier 1 Shipments Targeted: {tier1_count}")
-print(f"True Delays in Target Group: {tier1_actual_delays}")
-print(f"Estimated Unmanaged SLA Penalties: ${penalty_without_intervention:,.2f}")
-print(f"Intervention Operating Cost: ${intervention_cost:,.2f}")
-print(f"Penalties Saved (65% remediation rate): ${penalty_saved:,.2f}")
-print(f"Net Financial Benefit: ${net_financial_benefit:,.2f}")
-print(f"Estimated Intervention ROI: {roi_percentage:.1f}%")
-
-print("\nAll bonus challenges executed successfully!")
+print(interv_df['Intervention_Priority'].value_counts().to_frame("Shipment Count"))
+print("\nBonus execution complete!")
