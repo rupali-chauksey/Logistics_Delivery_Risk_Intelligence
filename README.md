@@ -1,7 +1,6 @@
 # Logistics Delivery Risk Intelligence
 ## Predictive Delay Modeling & Operational Intervention System for a Multi-Modal Freight Network
 
-- **Author / Candidate**: Rupali Chouksey
 - **Assignment Project**: Logistics Delivery Risk Intelligence (End-to-End Machine Learning Pipeline)
 - **Domain**: Logistics & Supply Chain Operations (RouteWise Logistics)
 - **GitHub Repository**: [https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence](https://github.com/rupali-chauksey/Logistics_Delivery_Risk_Intelligence)
